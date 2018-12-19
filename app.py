@@ -150,6 +150,7 @@ def verify_facebook():
                     try : 
                         event = entry["messaging"][0]
                     except : 
+                        print("No messaging in event")
                         return "", 404
                     print(event)
 
