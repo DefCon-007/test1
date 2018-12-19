@@ -7,7 +7,7 @@ import json
 from flask import Flask, render_template, redirect, request
 import time
 import requests
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 import pickle
 import github_api as gist
 """
@@ -123,49 +123,52 @@ def main():
 
 @app.route("/verify_facebook", methods=["POST", "GET"])
 def verify_facebook():
-    VERIFY_TOKEN = "1234553asdcds3"
+    try : 
+        VERIFY_TOKEN = "1234553asdcds3"
 
-    mode = request.args.get("hub.mode")
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
 
-    if mode and token:
-        # Verify
-        if mode == 'subscribe' and token == VERIFY_TOKEN:
-            return challenge
-    if request.method == "POST" : 
-        print("In heroku post ")
-        globDict = getPickleDict()
-        
-        body = request.json
-        if body["object"] == "page" : 
-            for entry in body["entry"] :
-                if entry.get("postback") : 
-                    postb = entry["postback"]
-                    payload = postb["payload"]
-                    print(payload)
-                    return "ok", 200
-                
-                try : 
-                    event = entry["messaging"][0]
-                except : 
-                    return "", 404
-                print(event)
+        if mode and token:
+            # Verify
+            if mode == 'subscribe' and token == VERIFY_TOKEN:
+                return challenge
+        if request.method == "POST" : 
+            print("In heroku post ")
+            globDict = getPickleDict()
+            
+            body = request.json
+            if body["object"] == "page" : 
+                for entry in body["entry"] :
+                    if entry.get("postback") : 
+                        postb = entry["postback"]
+                        payload = postb["payload"]
+                        print(payload)
+                        return "ok", 200
+                    
+                    try : 
+                        event = entry["messaging"][0]
+                    except : 
+                        return "", 404
+                    print(event)
 
-                #Getting the sender PSID
-                psid = event["sender"]["id"]
-                # print(get_user(psid))
-                print("Sender ID " + psid)
-                print("Sell Index is " + str(globDict["SELL_INDEX"]))
-                print("Sell Flag is " + str(globDict["SELL_FLAG"]))
-                if psid == "1013601592174583" : 
+                    #Getting the sender PSID
+                    psid = event["sender"]["id"]
+                    # print(get_user(psid))
+                    print("Sender ID " + psid)
+                    print("Sell Index is " + str(globDict["SELL_INDEX"]))
+                    print("Sell Flag is " + str(globDict["SELL_FLAG"]))
+                    if psid == "1013601592174583" : 
+                        return "Entry Rec",200
+                    if "message" in event.keys() : 
+                        handleMessage(psid,event["message"] )
+                        #Handle messages
+
                     return "Entry Rec",200
-                if "message" in event.keys() : 
-                    handleMessage(psid,event["message"] )
-                    #Handle messages
-
-                return "Entry Rec",200
-    else : 
+        else : 
+            return "error",404
+    except : 
         return "error",404
 
 
